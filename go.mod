@@ -1,4 +1,4 @@
-module game
+module github.com/kaleabAlemayehu/2dGame
 
 go 1.23.4
 

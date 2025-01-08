@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"game/entities"
-	"game/tiles"
+	"github.com/kaleabAlemayehu/2dGame/entities"
+	"github.com/kaleabAlemayehu/2dGame/tiles"
 	"image"
 	"log"
 
