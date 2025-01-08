@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"game/entities"
 	"game/tiles"
 	"image"
 	"log"
@@ -10,30 +11,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-type Sprite struct {
-	Image *ebiten.Image
-	X, Y  float64
-}
-
-type Player struct {
-	*Sprite
-	Health float64
-}
-
-type Enemy struct {
-	*Sprite
-	FollowPlayer bool
-}
-
-type Posion struct {
-	*Sprite
-	AmountOfHeal float64
-}
-
 type Game struct {
-	player      *Player
-	enemies     []*Enemy
-	posions     []*Posion
+	player      *entities.Player
+	enemies     []*entities.Enemy
+	posions     []*entities.Posion
 	tileMapJSON *tiles.TilesetMapJSON
 	tileMapImg  *ebiten.Image
 }
@@ -117,7 +98,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 350, 360
+	return ebiten.WindowSize()
 }
 
 func main() {
@@ -146,15 +127,15 @@ func main() {
 		log.Fatal(err)
 	}
 	if err := ebiten.RunGame(&Game{
-		player: &Player{
-			Sprite: &Sprite{Image: PlayerImage, X: 100.0, Y: 200.0},
+		player: &entities.Player{
+			Sprite: &entities.Sprite{Image: PlayerImage, X: 100.0, Y: 200.0},
 			Health: 100.0,
 		},
 		tileMapJSON: tileMapJSON,
 		tileMapImg:  tileMapImg,
-		enemies: []*Enemy{
+		enemies: []*entities.Enemy{
 			{
-				Sprite: &Sprite{
+				Sprite: &entities.Sprite{
 					Image: EnemyImage,
 					X:     200.0,
 					Y:     300.0,
@@ -162,7 +143,7 @@ func main() {
 				FollowPlayer: true,
 			},
 			{
-				Sprite: &Sprite{
+				Sprite: &entities.Sprite{
 					Image: EnemyImage,
 					X:     100.0,
 					Y:     200.0,
@@ -170,7 +151,7 @@ func main() {
 				FollowPlayer: false,
 			},
 			{
-				Sprite: &Sprite{
+				Sprite: &entities.Sprite{
 					Image: EnemyImage,
 					X:     400.0,
 					Y:     600.0,
@@ -179,9 +160,9 @@ func main() {
 			},
 		},
 
-		posions: []*Posion{
+		posions: []*entities.Posion{
 			{
-				Sprite: &Sprite{
+				Sprite: &entities.Sprite{
 					Image: PosionImage,
 					X:     20.0,
 					Y:     30.0,
@@ -189,7 +170,7 @@ func main() {
 				AmountOfHeal: 100,
 			},
 			{
-				Sprite: &Sprite{
+				Sprite: &entities.Sprite{
 					Image: PosionImage,
 					X:     190.0,
 					Y:     280.0,
@@ -197,7 +178,7 @@ func main() {
 				AmountOfHeal: 100,
 			},
 			{
-				Sprite: &Sprite{
+				Sprite: &entities.Sprite{
 					Image: PosionImage,
 					X:     400.0,
 					Y:     600.0,
