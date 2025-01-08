@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/kaleabAlemayehu/2dGame/entities"
-	"github.com/kaleabAlemayehu/2dGame/tiles"
+	"github.com/kaleabAlemayehu/2dGame/utilities"
 	"image"
 	"log"
 
@@ -12,14 +12,18 @@ import (
 )
 
 type Game struct {
-	player      *entities.Player
-	enemies     []*entities.Enemy
-	posions     []*entities.Posion
-	tileMapJSON *tiles.TilesetMapJSON
-	tileMapImg  *ebiten.Image
+	windowWidth  int
+	windowHeight int
+	player       *entities.Player
+	enemies      []*entities.Enemy
+	posions      []*entities.Posion
+	tileMapJSON  *utilities.TilesetMapJSON
+	tileMapImg   *ebiten.Image
+	cam          *utilities.Camera
 }
 
 func (g *Game) Update() error {
+	g.windowWidth, g.windowHeight = ebiten.WindowSize()
 	if ebiten.IsKeyPressed(ebiten.KeyUp) || ebiten.IsKeyPressed(ebiten.KeyK) {
 		g.player.Y -= 2
 	}
@@ -56,6 +60,8 @@ func (g *Game) Update() error {
 			fmt.Printf("curent Health: %v\n", g.player.Health)
 		}
 	}
+	g.cam.FollowTarget(g.player.X+8, g.player.Y+8, float64(g.windowWidth), float64(g.windowHeight))
+	g.cam.ConstraintTarget(float64(g.tileMapJSON.Layers[0].Width)*16, float64(g.tileMapJSON.Layers[0].Height)*16, 320, 240)
 
 	return nil
 }
@@ -76,22 +82,27 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			srcY *= 16
 
 			opts.GeoM.Translate(float64(x), float64(y))
+			opts.GeoM.Translate(g.cam.X, g.cam.Y)
 			screen.DrawImage(g.tileMapImg.SubImage(image.Rect(srcX, srcY, srcX+16, srcY+16)).(*ebiten.Image), &opts)
 			opts.GeoM.Reset()
 		}
 	}
+	// INFO: Drawing player
 	opts.GeoM.Translate(g.player.X, g.player.Y)
+	opts.GeoM.Translate(g.cam.X, g.cam.Y)
 	screen.DrawImage(g.player.Image.SubImage(image.Rect(0, 0, 16, 16)).(*ebiten.Image), &opts)
 	opts.GeoM.Reset()
 	// INFO: Drawing enemies
 	for _, enemy := range g.enemies {
 		opts.GeoM.Translate(enemy.X, enemy.Y)
+		opts.GeoM.Translate(g.cam.X, g.cam.Y)
 		screen.DrawImage(enemy.Image.SubImage(image.Rect(0, 0, 16, 16)).(*ebiten.Image), &opts)
 		opts.GeoM.Reset()
 	}
 	// INFO: Drawing position
 	for _, posion := range g.posions {
 		opts.GeoM.Translate(posion.X, posion.Y)
+		opts.GeoM.Translate(g.cam.X, g.cam.Y)
 		screen.DrawImage(posion.Image.SubImage(image.Rect(0, 0, 16, 16)).(*ebiten.Image), &opts)
 		opts.GeoM.Reset()
 	}
@@ -102,6 +113,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
+
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
@@ -118,7 +130,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tileMapJSON, err := tiles.NewTileMapJSON("./assets/spawn.json")
+	tileMapJSON, err := utilities.NewTileMapJSON("./assets/spawn.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,6 +145,7 @@ func main() {
 		},
 		tileMapJSON: tileMapJSON,
 		tileMapImg:  tileMapImg,
+		cam:         utilities.NewCamera(0.0, 0.0),
 		enemies: []*entities.Enemy{
 			{
 				Sprite: &entities.Sprite{
